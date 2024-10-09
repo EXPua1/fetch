@@ -30,11 +30,18 @@ const App = () => {
   const handleLoadMore = async () => {
     setLoading(true);
     const nextPage = page + 1;
-    setPage(nextPage); // Увеличиваем страницу
+    setPage(nextPage);
 
     try {
-      const result = await fetchImages(query, nextPage); // Получаем данные для следующей страницы
-      setData((prevData) => [...prevData, ...result]); // Добавляем новые данные к старым
+      const result = await fetchImages(query, nextPage);
+
+      // Проверка на уникальность изображений по их `id`
+      const uniqueResults = result.filter(
+        (newItem) =>
+          !data.some((existingItem) => existingItem.id === newItem.id)
+      );
+
+      setData((prevData) => [...prevData, ...uniqueResults]); // Добавляем только уникальные данные
     } catch (error) {
       console.log(error);
     } finally {
