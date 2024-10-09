@@ -1,26 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "modern-normalize";
 import "./index.css";
-import { Container, Section, ArticleList, SearchForm } from "./components";
-
-import { fetchArticlesWithTopic } from "./services/api";
+import { Container, GalleryList, Section, SearchForm } from "./components";
+import { fetchImages } from "./services/pix-abay-api";
 
 const App = () => {
-  const [articles, setArticles] = useState([]);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
 
-  const handleSearch = async (topic) => {
+  const handleSearch = async (searchQuery) => {
+    setLoading(true);
+    setQuery(searchQuery);
+    setPage(1);
+
     try {
-      setArticles([]);
-      setError(false);
-      setLoading(true);
-      const data = await fetchArticlesWithTopic(topic);
-      console.log(data);
-      setArticles(data);
+      const result = await fetchImages(searchQuery, 1); // Запрос для первой страницы
+      setData(result);
+      console.log(result);
     } catch (error) {
-      setError(true);
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setLoading(true);
+    const nextPage = page + 1;
+    setPage(nextPage); // Увеличиваем страницу
+
+    try {
+      const result = await fetchImages(query, nextPage); // Получаем данные для следующей страницы
+      setData((prevData) => [...prevData, ...result]); // Добавляем новые данные к старым
+    } catch (error) {
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -29,12 +45,16 @@ const App = () => {
   return (
     <Section>
       <Container>
-        <div>
-          <SearchForm onSearch={handleSearch} />
-          {loading && <p>Loading</p>}
-          {error && <Error />}
-          {articles.length > 0 && <ArticleList items={articles} />}
-        </div>
+        <SearchForm onSearch={handleSearch} />
+
+        {loading && <h2>Loading...</h2>}
+
+        <GalleryList data={data} />
+
+        {/* Кнопка "Load More" */}
+        {data.length > 0 && !loading && (
+          <button onClick={handleLoadMore}>Load More</button>
+        )}
       </Container>
     </Section>
   );

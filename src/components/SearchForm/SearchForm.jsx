@@ -1,20 +1,17 @@
+import css from "./SearchForm.module.css";
 const SearchForm = ({ onSearch }) => {
-  const handleSubmit = (evt) => {
-    evt.preventDefault();
-    const form = evt.target;
-    const topic = form.elements.topic.value;
-    if (form.elements.topic.value.trim() === "") {
-      alert("Please enter search term!");
-      return;
-    }
-    onSearch(topic);
-    form.reset();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const form = event.target;
+    const searchQuery = form.topic.value; // Извлекаем значение из поля ввода
+    onSearch(searchQuery); // Вызываем функцию поиска с введенным запросом
+    form.reset(); // Сбрасываем форму после отправки
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" name="topic" placeholder="Search articles..." />
-      <button>Search</button>
+    <form className={css.form} onSubmit={handleSubmit}>
+      <input type="text" name="topic" placeholder="Пошук картинок..." />
+      <button type="submit">Пошук</button>
     </form>
   );
 };
